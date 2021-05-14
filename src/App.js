@@ -18,6 +18,7 @@ const Div = styled.div`
 class App extends React.Component {
   constructor (props){
     super(props);
+    this.handleRefresh = this.handleRefresh.bind(this);
     this.state = {
       balance: 10000,
       coinData:[
@@ -55,12 +56,17 @@ class App extends React.Component {
     };
   };
 
+  handleRefresh(valueChangeTicker) {
+    const coin = this.state.coinData.find(({ticker}) => ticker === valueChangeTicker);
+    console.log(coin);
+  }
+
   render() {
     return (
       <Div className="App">
         <Header />
         <AccountBalance amount={this.state.balance} />
-        <CoinList coinData={this.state.coinData} />
+        <CoinList coinData={this.state.coinData} handleRefresh={this.handleRefresh} />
       </Div>
     );
   }
