@@ -17,6 +17,7 @@ export default class Coin extends Component {
     handleClick(event) {
         //Prevent the default action of refresh first
         event.preventDefault();
+        setTimeout(1000);
         this.props.handleRefresh(this.props.ticker);
 
         // const randomPercentage = 0.995 + Math.random() * 0.01;
@@ -37,7 +38,7 @@ export default class Coin extends Component {
                     <Td>${this.props.price}</Td>
                     <Td>
                         <form action='#' method='POST'>
-                            <button onClick={this.props.handleClick}>Refresh</button>
+                            <button onClick={this.handleClick}>Refresh</button>
                         </form>
                     </Td>
             </tr>
