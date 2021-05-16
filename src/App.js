@@ -59,6 +59,10 @@ class App extends React.Component {
     };
   };
 
+  componentDidMount = () => {
+    console.log('MOUNT')
+  }
+
   handleRefresh(valueChangeTicker) {
     const newCoinData = this.state.coinData.map( function(values) {
 
