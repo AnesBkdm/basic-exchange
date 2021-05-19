@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import AccountBalance from './components/AccountBalance/AccountBalance'
 import CoinList from './components/CoinList/CoinList';
 import Header from './components/Header/Header'
@@ -18,54 +18,14 @@ const Div = styled.div`
 const formatPrice = price => parseFloat(Number(price).toFixed(2));
 const COIN_COUNT = 10;
 
-class App extends React.Component {
-  constructor (props){
-    super(props);
+function App(props) {
+  
+  const [balance, setBalance] = useState(10000);
+  const [showBalance, setShowBalance] = useState(true);
+  const [coinData, setCoinData] = useState([]);
 
-    this.handleRefresh = this.handleRefresh.bind(this);
-    this.handleHide = this.handleHide.bind(this);
-
-    this.state = {
-      showBalance: true,
-      balance: 10000,
-      coinData: []
-      
-      // [
-      //   {
-      //     name: 'Bitcoin',
-      //     ticker: 'BTC',
-      //     price: 9999.9,
-      //     balance: 0.3
-      //   },
-      //   {
-      //     name: 'Ethereum',
-      //     ticker: 'ETH',
-      //     price: 1000,
-      //     balance: 23
-      //   },
-      //   {
-      //     name: 'Ripple',
-      //     ticker: 'XRP',
-      //     price: 0.2,
-      //     balance: 100
-      //   },
-      //   {
-      //     name: 'Tether',
-      //     ticker: 'USDT',
-      //     price: 1,
-      //     balance: 0,
-      //   },
-      //   {
-      //     name: 'Cardano',
-      //     ticker: 'ADA',
-      //     price: 2,
-      //     balance: 15
-      //   }
-      //
-    }
-  };
-
-  componentDidMount = async () => {
+  // Avoid temporal deadzone by putting exe functions first
+  const componentDidMount = async () => {
     
     const response = await axios.get('https://api.coinpaprika.com/v1/coins');
     const coinIds = response.data.slice(0, COIN_COUNT).map(coin => coin.id);
@@ -84,11 +44,20 @@ class App extends React.Component {
     })
 
     // Retrieving prices
-    this.setState({coinData: coinPriceData});
+    // this.setState({coinData: coinPriceData});
+    setCoinData(coinPriceData);
   };
-  
 
-  async handleRefresh(valueChangeId) {
+  useEffect(function() { // WARNING: useEffect cannot be Async
+    if(coinData.length === 0){
+      // componentDidMount here
+      componentDidMount();
+    } else {
+      // componentDidUpdate here
+    }
+  });
+
+  const handleRefresh = async (valueChangeId) => {
     const tickerUrl = `https://api.coinpaprika.com/v1/tickers/${valueChangeId}`;
 
     const response = await axios.get(tickerUrl);
@@ -97,7 +66,7 @@ class App extends React.Component {
     const newPrice = formatPrice(response.data.quotes.USD.price);
     console.log(newPrice);
 
-    const newCoinData = this.state.coinData.map( function(values) {
+    const newCoinData = coinData.map( function(values) {
 
       let newValues = {...values};
 
@@ -108,32 +77,28 @@ class App extends React.Component {
       return newValues;
     });
 
-    this.setState({coinData: newCoinData});
+    // this.setState({coinData: newCoinData});
+    setCoinData(newCoinData);
   };
 
-  handleHide() {
-    this.setState(function(oldState){
-      return {
-        ...oldState,
-        showBalance: !oldState.showBalance
-      }
-    })
+  const handleHide = () => {
+    setShowBalance(oldValue => !oldValue);
   };
 
-  render() {
-    return (
-      <Div className="App">
-        <Header />
-        <AccountBalance amount={this.state.balance}
-                        handleHide={this.handleHide} 
-                        showBalance={this.state.showBalance}
-        />
-        <CoinList coinData={this.state.coinData} 
-                  handleRefresh={this.handleRefresh}
-                  showBalance={this.state.showBalance} />
-      </Div>
-    );
-  }
+
+  return (
+    <Div className="App">
+      <Header />
+      <AccountBalance amount={balance}
+                      handleHide={handleHide} 
+                      showBalance={showBalance}
+      />
+      <CoinList coinData={coinData} 
+                handleRefresh={handleRefresh}
+                showBalance={showBalance} />
+    </Div>
+  );
+
 };
 
 export default App;
